@@ -185,8 +185,8 @@ http.createServer(function(req, res) {
           log.push(`[${timestamp}] Sending GET /recipes to backend...`);
           fetchRecipes((err2, recipes) => {
             log.push(`[${timestamp}] GET /recipes → returned ${recipes.length} recipes from MongoDB`);
-            res.writeHead(200, {'Content-Type': 'text/html'});
-            res.end(renderPage(recipes, log, !err));
+            res.writeHead(302, { Location: '/?saved=true' });
+            res.end();
           });
         }, 500);
       });
@@ -194,16 +194,17 @@ http.createServer(function(req, res) {
     return;
   }
 
-  log.push(`[${timestamp}] GET / received`);
-  log.push(`[${timestamp}] Fetching all recipes from backend...`);
-  fetchRecipes((err, recipes) => {
-    if (err) {
-      log.push(`[${timestamp}] ERROR: ${err.message}`);
-    } else {
-      log.push(`[${timestamp}] GET /recipes → returned ${recipes.length} recipes from MongoDB`);
-    }
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end(renderPage(recipes, log, false));
-  });
+const savedMsg = parsedUrl.query && parsedUrl.query.includes('saved=true');
+log.push(`[${timestamp}] GET / received`);
+log.push(`[${timestamp}] Fetching all recipes from backend...`);
+fetchRecipes((err, recipes) => {
+  if (err) {
+    log.push(`[${timestamp}] ERROR: ${err.message}`);
+  } else {
+    log.push(`[${timestamp}] GET /recipes → returned ${recipes.length} recipes from MongoDB`);
+  }
+  res.writeHead(200, {'Content-Type': 'text/html'});
+  res.end(renderPage(recipes, log, savedMsg));
+});
 
 }).listen(global.gConfig.exposedPort);
