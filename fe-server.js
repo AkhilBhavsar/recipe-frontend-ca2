@@ -372,7 +372,7 @@ function renderPage(recipes, log, savedMsg, searchQuery, activeFilter) {
   </header>
 
   <div class="strip reveal d2">
-    <span>Vol. 01 · Issue <em>№ ${String(count).padStart(3,'0')}</em></span>
+    <span>Vol. 01 · Issue <em>№ 02 </em></span>
     <span class="services">3 / 3 services healthy</span>
     <span>MongoDB · Spring · Node · <em>AKS</em></span>
   </div>
