@@ -60,3 +60,16 @@ jobs:
           name: trivy-frontend-report
           path: trivy-frontend-report.txt
           retention-days: 30
+
+      - name: Update image tag in infra manifest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git clone https://x-access-token:${{ secrets.INFRA_REPO_TOKEN }}@github.com/AkhilBhavsar/recipe-infra-ca2.git
+          cd recipe-infra-ca2
+          sed -i "s|recipeacr9c4b0f.azurecr.io/recipe-frontend:.*|recipeacr9c4b0f.azurecr.io/recipe-frontend:${{ github.sha }}|g" k8s/frontend-blue.yml
+          sed -i "s|recipeacr9c4b0f.azurecr.io/recipe-frontend:.*|recipeacr9c4b0f.azurecr.io/recipe-frontend:${{ github.sha }}|g" k8s/frontend-green.yml
+          git config user.email "ci@github.com"
+          git config user.name "GitHub Actions CI"
+          git add k8s/frontend-blue.yml k8s/frontend-green.yml
+          git diff --cached --quiet || git commit -m "ci: update frontend image to ${{ github.sha }}"
+          git push
