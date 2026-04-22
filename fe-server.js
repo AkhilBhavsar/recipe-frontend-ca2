@@ -633,13 +633,21 @@ http.createServer(function(req, res) {
     return;
   }
 
-  if (req.method === 'POST') {
+if (req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk.toString());
     req.on('end', () => {
       const post = qs.parse(body);
+
+      // Reject empty or whitespace-only recipe names — prevents blank MongoDB entries
+      if (!post.name || !post.name.trim()) {
+        res.writeHead(302, { Location: `/?filter=${parsedUrl.query.filter||'all'}&search=${encodeURIComponent(parsedUrl.query.search||'')}` });
+        res.end();
+        return;
+      }
+
       const recipe = {
-        name: post.name,
+        name: post.name.trim(),
         ingredients: post.ingredients ? post.ingredients.split(',').map(i => i.trim()).filter(Boolean) : [],
         prepTimeInMinutes: parseInt(post.prepTimeInMinutes) || 0
       };
@@ -658,7 +666,7 @@ http.createServer(function(req, res) {
     });
     return;
   }
-
+  
   const searchQuery = parsedUrl.query.search || '';
   const activeFilter = parsedUrl.query.filter || 'all';
   const savedMsg = parsedUrl.query.saved === 'true';
